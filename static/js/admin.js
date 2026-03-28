@@ -6,7 +6,7 @@
 'use strict';
 
 const ADMIN_PASSWORD = 'ScriptMate@2025';
-const GAS_STORAGE_KEY = 'sm_gas_url';
+const GAS_STORAGE_KEY = 'https://script.google.com/macros/s/AKfycbxARG-naG0lWzqIFY-XkDyflE_kv8HHOKbZB0qvWXfTNo2oPjoAIdY-dCYlWkKcZiv3lg/exec';
 
 /* ── Read GAS URL from localStorage (set by Setup Wizard) ── */
 function getGasUrl() {
