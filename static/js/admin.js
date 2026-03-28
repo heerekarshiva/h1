@@ -10,7 +10,7 @@ const GAS_STORAGE_KEY = 'https://script.google.com/macros/s/AKfycbxARG-naG0lWzqI
 
 /* ── Read GAS URL from localStorage (set by Setup Wizard) ── */
 function getGasUrl() {
-  return localStorage.getItem(GAS_STORAGE_KEY) || '';
+  return localStorage.getItem(GAS_STORAGE_KEY) || 'https://script.google.com/macros/s/AKfycbxARG-naG0lWzqIFY-XkDyflE_kv8HHOKbZB0qvWXfTNo2oPjoAIdY-dCYlWkKcZiv3lg/exec';
 }
 
 /* ── Helpers ── */
