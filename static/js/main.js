@@ -5,7 +5,7 @@
 ═══════════════════════════════════════════════ */
 'use strict';
 
-const GAS_STORAGE_KEY = 'sm_gas_url';
+const GAS_STORAGE_KEY = 'https://script.google.com/macros/s/AKfycbxARG-naG0lWzqIFY-XkDyflE_kv8HHOKbZB0qvWXfTNo2oPjoAIdY-dCYlWkKcZiv3lg/exec';
 function getGasUrl() { return localStorage.getItem(GAS_STORAGE_KEY) || ''; }
 
 /* ── Helpers ── */
