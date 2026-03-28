@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>ScriptMate — Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="static/css/admin.css"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+/* ── Setup Wizard ── */
+.setup-overlay{position:fixed;inset:0;background:rgba(10,14,20,.92);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px}
+.setup-card{background:#131b26;border:1.5px solid #2a9d5c55;border-radius:20px;padding:36px 32px;max-width:540px;width:100%;box-shadow:0 24px 64px #000a}
+.setup-card h2{font-size:1.3rem;color:#e8edf5;margin-bottom:6px}
+.setup-card p{font-size:.82rem;color:#7a8a9e;margin-bottom:20px;line-height:1.6}
+.setup-steps{counter-reset:step;margin-bottom:22px}
+.setup-step{display:flex;gap:12px;margin-bottom:12px;align-items:flex-start}
+.setup-step-num{counter-increment:step;min-width:24px;height:24px;background:#2a9d5c22;border:1px solid #2a9d5c55;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;color:#2a9d5c;margin-top:1px}
+.setup-step-num::before{content:counter(step)}
+.setup-step-txt{font-size:.8rem;color:#9aabbc;line-height:1.6}
+.setup-step-txt a{color:#2a9d5c;text-decoration:none}
+.setup-step-txt a:hover{text-decoration:underline}
+.setup-step-txt code{background:#0d1117;border:1px solid #2a3040;border-radius:5px;padding:2px 7px;font-family:'JetBrains Mono',monospace;font-size:.76rem;color:#e8edf5}
+.setup-url-row{display:flex;gap:8px;margin-bottom:18px}
+.setup-url-inp{flex:1;background:#0d1117;border:1.5px solid #2a3040;border-radius:10px;padding:10px 14px;color:#e8edf5;font-size:.82rem;font-family:'JetBrains Mono',monospace;outline:none;transition:border .2s}
+.setup-url-inp:focus{border-color:#2a9d5c}
+.setup-url-inp::placeholder{color:#3a4a5e}
+.btn-setup-save{background:linear-gradient(135deg,#2a9d5c,#22875a);color:#fff;border:none;border-radius:10px;padding:10px 22px;font-size:.85rem;font-weight:600;cursor:pointer;white-space:nowrap;transition:opacity .2s}
+.btn-setup-save:hover{opacity:.88}
+.setup-err{font-size:.77rem;color:#e05252;margin-top:-10px;margin-bottom:10px;display:none}
+.setup-err.show{display:block}
+.setup-note{font-size:.74rem;color:#4a5a6e;text-align:center;margin-top:8px}
+/* banner in dashboard */
+.gas-banner{background:#131b26;border:1.5px solid #2a9d5c44;border-radius:12px;padding:14px 18px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.gas-banner-txt{font-size:.8rem;color:#7a8a9e}
+.gas-banner-txt strong{color:#2a9d5c}
+.gas-banner-btn{background:#2a9d5c22;border:1px solid #2a9d5c55;color:#2a9d5c;border-radius:8px;padding:6px 14px;font-size:.78rem;font-weight:600;cursor:pointer;white-space:nowrap}
+.gas-banner-btn:hover{background:#2a9d5c33}
+</style>
+</head>
+<body>
+
+<!-- ── SETUP WIZARD (shown when GAS not configured) ── -->
+<div class="setup-overlay" id="setupOverlay" style="display:none">
+  <div class="setup-card">
+    <h2>⚙️ One-Time Setup Required</h2>
+    <p>To show orders from <strong>any device</strong> in your admin panel, paste your Google Apps Script URL below. This takes about 5 minutes and is free.</p>
+
+    <div class="setup-steps">
+      <div class="setup-step">
+        <div class="setup-step-num"></div>
+        <div class="setup-step-txt">Open <a href="https://script.google.com" target="_blank">script.google.com</a> → click <strong>New project</strong></div>
+      </div>
+      <div class="setup-step">
+        <div class="setup-step-num"></div>
+        <div class="setup-step-txt">Delete all existing code → paste the entire contents of <code>google-apps-script.js</code> (included in your zip) → click 💾 Save</div>
+      </div>
+      <div class="setup-step">
+        <div class="setup-step-num"></div>
+        <div class="setup-step-txt">Click <strong>Deploy → New deployment</strong> → gear ⚙️ → <strong>Web app</strong></div>
+      </div>
+      <div class="setup-step">
+        <div class="setup-step-num"></div>
+        <div class="setup-step-txt">Set <strong>Execute as: Me</strong> &nbsp;·&nbsp; <strong>Who has access: Anyone</strong> → click <strong>Deploy</strong></div>
+      </div>
+      <div class="setup-step">
+        <div class="setup-step-num"></div>
+        <div class="setup-step-txt">Copy the Web App URL and paste it below 👇</div>
+      </div>
+    </div>
+
+    <div class="setup-url-row">
+      <input class="setup-url-inp" id="gasUrlInput" type="url"
+        placeholder="https://script.google.com/macros/s/ABC.../exec"/>
+      <button class="btn-setup-save" onclick="saveGasUrl()">Save & Connect</button>
+    </div>
+    <div class="setup-err" id="setupErr">Please enter a valid Google Apps Script URL (should end with /exec)</div>
+    <div class="setup-note">Your URL is saved in this browser. You only need to do this once per device.</div>
+  </div>
+</div>
+
+<!-- LOGIN GATE -->
+<div id="loginGate" style="display:flex">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="logo-icon">✒️</div>
+      <h1>Script<span>Mate</span></h1>
+      <p>Admin Dashboard</p>
+    </div>
+    <div class="login-field">
+      <label>Password</label>
+      <input type="password" id="adminPwd" placeholder="Enter admin password" autocomplete="current-password"/>
+    </div>
+    <div class="login-err" id="loginErr">Incorrect password. Please try again.</div>
+    <button class="btn-login" onclick="doLogin()">Sign In →</button>
+    <p style="margin-top:14px;font-size:.72rem;color:#888;text-align:center">Orders sync across all devices via Google Sheets</p>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard" class="hidden">
+
+  <!-- Header -->
+  <header class="dash-header">
+    <div class="dash-header-left">
+      <a class="dash-logo" href="index.html" target="_blank">
+        <div class="li">✒️</div>
+        <span>Script<em>Mate</em></span>
+      </a>
+      <span class="dash-badge">Admin</span>
+      <div class="view-title-wrap">
+        <div class="view-title-main" id="viewTitle">Overview</div>
+        <div class="view-title-sub" id="viewSub">All time statistics</div>
+      </div>
+    </div>
+    <div class="dash-header-right">
+      <button class="btn-sm" onclick="loadAll()">↻ Refresh</button>
+      <a class="btn-sm" href="index.html" target="_blank">🌐 View Site</a>
+      <button class="btn-sm" onclick="openSetup()" title="Change backend URL">⚙️ Setup</button>
+      <button class="btn-sm danger" onclick="doLogout()">Sign Out</button>
+    </div>
+  </header>
+
+  <!-- Body -->
+  <div class="dash-body">
+
+    <!-- Sidebar -->
+    <nav class="sidebar">
+      <div class="sb-section">Navigation</div>
+      <button class="sb-link active" onclick="switchView('overview',this)"><span class="sb-ico">📊</span> Overview</button>
+      <button class="sb-link" onclick="switchView('orders',this)"><span class="sb-ico">📋</span> Orders</button>
+      <button class="sb-link" onclick="switchView('analytics',this)"><span class="sb-ico">📈</span> Analytics</button>
+    </nav>
+
+    <!-- Content -->
+    <div class="dash-content">
+
+      <!-- OVERVIEW VIEW -->
+      <div class="dash-view" id="view-overview">
+
+        <!-- GAS not set banner -->
+        <div class="gas-banner hidden" id="notSetupBanner">
+          <div class="gas-banner-txt">⚠️ <strong>Backend not connected.</strong> Orders won't sync across devices until you set up Google Apps Script.</div>
+          <button class="gas-banner-btn" onclick="openSetup()">Connect Now →</button>
+        </div>
+
+        <!-- KPIs -->
+        <div class="kpi-grid">
+          <div class="kpi-card"><div class="kpi-icon">📦</div><div class="kpi-val" id="k_orders">—</div><div class="kpi-lbl">Total Orders</div></div>
+          <div class="kpi-card"><div class="kpi-icon">💰</div><div class="kpi-val" id="k_rev">—</div><div class="kpi-lbl">Total Revenue</div></div>
+          <div class="kpi-card"><div class="kpi-icon">📄</div><div class="kpi-val" id="k_pages">—</div><div class="kpi-lbl">Pages Written</div></div>
+          <div class="kpi-card"><div class="kpi-icon">📐</div><div class="kpi-val" id="k_avg">—</div><div class="kpi-lbl">Avg Order Value</div></div>
+        </div>
+
+        <!-- Charts row 1 -->
+        <div class="chart-grid">
+          <div class="chart-card">
+            <div class="chart-title">📈 Revenue Trend (14 days)</div>
+            <div class="chart-wrap"><canvas id="chartTrend"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title">🎓 Orders by Level</div>
+            <div class="chart-wrap"><canvas id="chartLevel"></canvas></div>
+          </div>
+        </div>
+
+        <!-- Charts row 2 -->
+        <div class="chart-grid">
+          <div class="chart-card">
+            <div class="chart-title">📝 Orders by Work Type</div>
+            <div class="chart-wrap"><canvas id="chartWorkType"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title">💸 Revenue by Level</div>
+            <div class="chart-wrap"><canvas id="chartRevLevel"></canvas></div>
+          </div>
+        </div>
+
+        <!-- Charts row 3 -->
+        <div class="chart-grid-3">
+          <div class="chart-card">
+            <div class="chart-title">📄 Pages Distribution</div>
+            <div class="chart-wrap-sm"><canvas id="chartPages"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title">📊 Graphs vs No Graphs</div>
+            <div class="chart-wrap-sm"><canvas id="chartGraphs"></canvas></div>
+          </div>
+          <div class="chart-card">
+            <div class="chart-title">💰 Revenue by Work Type</div>
+            <div class="chart-wrap-sm"><canvas id="chartRevWt"></canvas></div>
+          </div>
+        </div>
+
+        <!-- Semester chart -->
+        <div class="chart-card" style="margin-bottom:24px">
+          <div class="chart-title">🗓 Orders by Semester</div>
+          <div class="chart-wrap"><canvas id="chartSem"></canvas></div>
+        </div>
+      </div>
+
+      <!-- ORDERS VIEW -->
+      <div class="dash-view hidden" id="view-orders">
+        <div class="table-toolbar">
+          <input class="srch-inp" id="searchQ" type="text" placeholder="🔍 Search orders…" oninput="filterOrders()"/>
+          <select class="filter-sel" id="filterLvl" onchange="filterOrders()">
+            <option value="">All Levels</option>
+            <option>B.Tech</option><option>Degree</option><option>Masters</option><option>Diploma</option>
+          </select>
+          <select class="filter-sel" id="filterWt" onchange="filterOrders()">
+            <option value="">All Types</option>
+            <option>Assignment</option><option>Class Work</option><option>Record</option><option>Observation</option>
+          </select>
+          <span class="orders-count" id="ordersCount">0 orders</span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th onclick="sortTable('id')">Order ID</th>
+                <th onclick="sortTable('full_name')">Name</th>
+                <th onclick="sortTable('college')">College</th>
+                <th onclick="sortTable('subject')">Subject</th>
+                <th onclick="sortTable('level')">Level</th>
+                <th onclick="sortTable('work_type')">Type</th>
+                <th onclick="sortTable('pages')">Pages</th>
+                <th onclick="sortTable('grand_total')">Total</th>
+                <th onclick="sortTable('created_at')">Date</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="ordersBody">
+              <tr><td colspan="10" class="no-data">Loading orders…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ANALYTICS VIEW -->
+      <div class="dash-view hidden" id="view-analytics">
+        <div id="summaryStats" style="margin-bottom:24px">
+          <p style="color:var(--mist3);font-size:.82rem">Loading analytics…</p>
+        </div>
+      </div>
+
+    </div><!-- /dash-content -->
+  </div><!-- /dash-body -->
+</div><!-- /dashboard -->
+
+<!-- Order Modal -->
+<div class="modal-overlay hidden" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-head">
+      <h3 id="modalTitle">Order Details</h3>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-actions">
+      <button onclick="confirmDelete(window._modalOrder?.id)" class="danger">🗑 Delete</button>
+      <button onclick="printModalBill()" class="primary">🖨 Print Bill</button>
+      <button onclick="closeModal()">Close</button>
+    </div>
+  </div>
+</div>
+
+<script src="static/js/admin.js"></script>
+</body>
+</html>
